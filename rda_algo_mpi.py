@@ -13,8 +13,14 @@ import matplotlib.pyplot as plt
 import random, math
 import sys
 from tqdm import tqdm
+np.random.seed(44)
 
 from utilities import Solution, initialize, sort_agents, cycle_cost, display
+
+# from mpi4py import MPI
+# comm = MPI.COMM_WORLD
+# myrank = comm.Get_rank()
+# number_processes = comm.Get_size()
 
 def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB):
 
@@ -214,20 +220,20 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     end_time = time.time()
     exec_time = end_time - start_time
 
-    # plot convergence curves
-    iters = np.arange(max_iter)+1
-    fig, axes = plt.subplots()
-    fig.tight_layout(pad = 5)
-    # fig.suptitle('Convergence Curves')
-
-    axes.set_title('Total Distance vs Iterations')
-    axes.set_xlabel('Iteration')
-    axes.set_ylabel('Total Distance')
-    axes.plot(iters, -convergence_curve['fitness'])
-
-    if(save_conv_graph):
-        plt.savefig('convergence_graph_'+ short_name + '.jpg')
-    plt.show()
+    # # plot convergence curves
+    # iters = np.arange(max_iter)+1
+    # fig, axes = plt.subplots()
+    # fig.tight_layout(pad = 5)
+    # # fig.suptitle('Convergence Curves')
+    #
+    # axes.set_title('Total Distance vs Iterations')
+    # axes.set_xlabel('Iteration')
+    # axes.set_ylabel('Total Distance')
+    # axes.plot(iters, -convergence_curve['fitness'])
+    #
+    # if(save_conv_graph):
+    #     plt.savefig('convergence_graph_'+ short_name + '.jpg')
+    # plt.show()
 
     # update attributes of solution
     solution.best_agent = Leader_agent
@@ -241,30 +247,16 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     return solution
 
 
-#----------Small example-----------------
-N_vertices = 4
-graph = np.array([[0, 10, 15, 20],
-                  [10, 0, 35, 25],
-                  [15, 35, 0, 30],
-                  [20, 25, 30, 0]])
-# lowest cost for this example is 80 => 1-2-4-3-1
+if __name__ == "__main__":
 
-solution = RDA(num_agents=8, max_iter=3, graph=graph, N_vertices=N_vertices, obj_function=cycle_cost, save_conv_graph=True, alpha=0.2, beta=0.1, gamma=0.5, num_males_frac = 0.25, UB=5, LB=-5)
-#----------Small example-----------------
+    N_vertices_sample_1 = 120
+    graph_sample_1 = np.zeros((120,120))
 
-#----------Big example-----------------
-np.random.seed(44)
+    for i in range(N_vertices_sample_1):
+        for j in range(N_vertices_sample_1):
+            if(i<=j):
+                break
+            graph_sample_1[i][j] = np.random.randint(1000)
+            graph_sample_1[j][i] = graph_sample_1[i][j]
 
-N_vertices_sample_1 = 120
-graph_sample_1 = np.zeros((120,120))
-
-for i in range(N_vertices_sample_1):
-  for j in range(N_vertices_sample_1):
-    if(i<=j):
-      break
-    graph_sample_1[i][j] = np.random.randint(1000)
-    graph_sample_1[j][i] = graph_sample_1[i][j]
-
-solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5)
-
-#----------Big example-----------------
+    solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5)
