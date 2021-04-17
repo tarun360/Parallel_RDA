@@ -17,10 +17,7 @@ np.random.seed(44)
 
 from utilities import Solution, initialize, sort_agents, cycle_cost, display
 
-# from mpi4py import MPI
-# comm = MPI.COMM_WORLD
-# myrank = comm.Get_rank()
-# number_processes = comm.Get_size()
+from cython.parallel import prange
 
 def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB):
 
@@ -81,7 +78,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         hinds = deer[num_males:,:]
 
         # roaring of male deer
-        for i in range(num_males):
+        for i in prange(range(num_males), nogil = True):
             r1 = np.random.random() # r1 is a random number in [0, 1]
             r2 = np.random.random() # r2 is a random number in [0, 1]
             r3 = np.random.random() # r3 is a random number in [0, 1]
