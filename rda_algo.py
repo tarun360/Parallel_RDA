@@ -12,10 +12,10 @@ import time
 import matplotlib.pyplot as plt
 import random, math
 import sys
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
-class Solution():    
-    #structure of the solution 
+class Solution():
+    #structure of the solution
     def __init__(self):
         self.N_vetices = None
         self.num_agents = None
@@ -36,7 +36,7 @@ def initialize(num_agents, N_vertices):
 
     for agent_no in range(num_agents):
       agents[agent_no] = np.random.choice([0, 1], size=N_vertices, p=[.5, .5])
-      
+
     return agents
 
 
@@ -86,22 +86,22 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     ############################### Parameters ####################################
     #                                                                             #
     #   num_agents: number of red deers                                           #
-    #   max_iter: maximum number of generations                                   #      
+    #   max_iter: maximum number of generations                                   #
     #   obj_function: the function to maximize while doing feature selection      #
     #   trans_function_shape: shape of the transfer function used                 #
     #   save_conv_graph: boolean value for saving convergence graph               #
     #                                                                             #
     ###############################################################################
-    
+
     # Number of agents must be at least 8
     if num_agents < 8:
         print("[Error!] The value of the parameter num_agents must be at least 8", file=sys.stderr)
         sys.exit(1)
-        
+
     short_name = 'RDA'
     agent_name = 'RedDeer'
-    
-    
+
+
     # initialize red deers and Leader (the agent with the max fitness)
     deer = initialize(num_agents, N_vertices)
     fitness = np.zeros(num_agents)
@@ -121,7 +121,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     solution.max_iter = max_iter
     solution.N_vertices = N_vertices
     solution.obj_function = obj_function
-    
+
     # initializing parameters
     # UB = 5 # Upper bound
     # LB = -5 # Lower bound
@@ -142,7 +142,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         num_hinds = num_agents - num_males
         males = deer[:num_males,:]
         hinds = deer[num_males:,:]
-        
+
         # roaring of male deer
         for i in range(num_males):
             r1 = np.random.random() # r1 is a random number in [0, 1]
@@ -153,19 +153,19 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 new_male += r1 * (((UB - LB) * r2) + LB)
             else:
                 new_male -= r1 * (((UB - LB) * r2) + LB)
-                    
+
             if obj_function(new_male, graph) < obj_function(males[i], graph):
                 males[i] = new_male
-        
-        
+
+
         # selection of male commanders and stags
         num_coms = int(num_males * gamma) # Eq. (4)
         num_stags = num_males - num_coms # Eq. (5)
 
         coms = males[:num_coms,:]
         stags = males[num_coms:,:]
-        
-        # fight between male commanders and stags       
+
+        # fight between male commanders and stags
         for i in range(num_coms):
             chosen_com = coms[i].copy()
             chosen_stag = random.choice(stags)
@@ -173,13 +173,13 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             r2 = np.random.random()
             new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
             new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
-                    
+
             fitness = np.zeros(4)
             fitness[0] = obj_function(chosen_com, graph)
             fitness[1] = obj_function(chosen_stag, graph)
             fitness[2] = obj_function(new_male_1, graph)
             fitness[3] = obj_function(new_male_2, graph)
-            
+
             bestfit = np.max(fitness)
             if fitness[0] < fitness[1] and fitness[1] == bestfit:
                 coms[i] = chosen_stag.copy()
@@ -204,7 +204,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for j in range(harem_size):
                 harem[i][j] = hinds[itr]
                 itr += 1
-        
+
         # mating of commander with hinds in his harem
         num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
         population_pool = list(deer)
@@ -213,13 +213,13 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for j in range(num_harem_mate[i]):
                 r = np.random.random() # r is a random number in [0, 1]
                 offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
-                
+
                 population_pool.append(list(offspring))
-                
+
                 # if number of commanders is greater than 1, inter-harem mating takes place
                 if num_coms > 1:
                     # mating of commander with hinds in another harem
-                    k = i 
+                    k = i
                     while k == i:
                         k = random.choice(range(num_coms))
 
@@ -228,9 +228,9 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     np.random.shuffle(harem[k])
                     for j in range(num_mate):
                         r = np.random.random() # r is a random number in [0, 1]
-                        offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r 
+                        offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         population_pool.append(list(offspring))
-        
+
         # mating of stag with nearest hind
         for stag in stags:
             dist = np.zeros(num_hinds)
@@ -243,17 +243,17 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     r = np.random.random() # r is a random number in [0, 1]
                     offspring = (stag + hinds[i])/2 + (UB - LB) * r
                     population_pool.append(list(offspring))
-                    
+
                     break
-        
+
         # selection of the next generation
-        population_pool = np.array(population_pool)            
+        population_pool = np.array(population_pool)
         population_pool, fitness = sort_agents(population_pool, obj_function, graph)
         maximum = sum([f for f in fitness])
         selection_probs = [f/maximum for f in fitness]
-        indices = np.random.choice(len(population_pool), size=num_agents, replace=True, p=selection_probs)          
+        indices = np.random.choice(len(population_pool), size=num_agents, replace=True, p=selection_probs)
         deer = population_pool[indices]
-        
+
         # update final information
         deer, fitness = sort_agents(deer, obj_function, graph)
         #display(deer, fitness, agent_name)
@@ -277,13 +277,13 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     # stop timer
     end_time = time.time()
     exec_time = end_time - start_time
-    
+
     # plot convergence curves
     iters = np.arange(max_iter)+1
     fig, axes = plt.subplots()
-    fig.tight_layout(pad = 5) 
+    fig.tight_layout(pad = 5)
     # fig.suptitle('Convergence Curves')
-    
+
     axes.set_title('Total Distance vs Iterations')
     axes.set_xlabel('Iteration')
     axes.set_ylabel('Total Distance')
@@ -304,6 +304,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     solution.execution_time = exec_time
     return solution
 
+
+#----------Small example-----------------
 N_vertices = 4
 graph = np.array([[0, 10, 15, 20],
                   [10, 0, 35, 25],
@@ -312,13 +314,13 @@ graph = np.array([[0, 10, 15, 20],
 # lowest cost for this example is 80 => 1-2-4-3-1
 
 solution = RDA(num_agents=8, max_iter=3, graph=graph, N_vertices=N_vertices, obj_function=cycle_cost, save_conv_graph=True, alpha=0.2, beta=0.1, gamma=0.5, num_males_frac = 0.25, UB=5, LB=-5)
-solution.best_fitness
+#----------Small example-----------------
 
-# Big example
+#----------Big example-----------------
 np.random.seed(44)
 
 N_vertices_sample_1 = 120
-graph_sample_1 = np.zeros((120,120)) 
+graph_sample_1 = np.zeros((120,120))
 
 for i in range(N_vertices_sample_1):
   for j in range(N_vertices_sample_1):
@@ -326,24 +328,7 @@ for i in range(N_vertices_sample_1):
       break
     graph_sample_1[i][j] = np.random.randint(1000)
     graph_sample_1[j][i] = graph_sample_1[i][j]
-    
-graph_sample_1.sum()
 
 solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5)
 
-solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.7, num_males_frac=0.25, UB=5, LB=-5)
-
-RDA(num_agents=200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.1, beta=0.7, gamma=0.2, num_males_frac=0.15, UB=5, LB=-5)
-
-alphas = np.arange(0.1,1,0.1)
-betas = np.arange(0.1,1,0.1)
-gammas = np.arange(0.1,1,0.1)
-
-for alpha in alphas:
-  for beta in betas:
-    for gamma in gammas:
-      print("For :",alpha,beta,gamma)
-      RDA(num_agents=200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=alpha, beta=beta, gamma=gamma, num_males_frac=0.15, UB=5, LB=-5)
-
-#0.1 0.7000000000000001 0.2
-
+#----------Big example-----------------
