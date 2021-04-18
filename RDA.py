@@ -40,15 +40,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     #                                                                             #
     ###############################################################################
 
-    # Number of agents must be at least 8
-    if num_agents < 8:
-        print("[Error!] The value of the parameter num_agents must be at least 8", file=sys.stderr)
-        sys.exit(1)
-
-    short_name = 'RDA'
-    agent_name = 'RedDeer'
-
-
     # initialize red deers and Leader (the agent with the max fitness)
     deer = initialize(num_agents, N_vertices)
     fitness = np.zeros(num_agents)
@@ -203,7 +194,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         # update final information
         deer, fitness = sort_agents(deer, obj_function, graph)
-        #display(deer, fitness, agent_name)
+        #display(deer, fitness, Red Deer)
         if fitness[0] > Leader_fitness:
             Leader_agent = deer[0].copy()
             Leader_fitness = fitness[0].copy()
@@ -217,8 +208,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     print('\n================================================================================')
     print('                                    Final Result                                  ')
     print('================================================================================\n')
-    print('Leader ' + agent_name + ' Fitness : {}'.format(Leader_fitness))
-    print('Leader ' + agent_name + ' Lowest cost : {}'.format(-Leader_cost))
+    print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
+    print('Leader Red Deer Lowest cost : {}'.format(-Leader_cost))
     print('\n================================================================================\n')
 
     # stop timer
@@ -237,7 +228,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     axes.plot(iters, -convergence_curve['fitness'])
 
     if(save_conv_graph):
-        plt.savefig('convergence_graph_'+ short_name + '.jpg')
+        plt.savefig('convergence_graph_RDA.jpg')
     plt.show()
 
     # update attributes of solution
@@ -277,5 +268,5 @@ if __name__ == "__main__":
         graph_sample_1[i][j] = np.random.randint(1000)
         graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5)
+    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5)
     print(solution.execution_time)

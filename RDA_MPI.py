@@ -46,14 +46,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     #                                                                             #
     ###############################################################################
 
-    # Number of agents must be at least 8
-    if num_agents < 8:
-        print("[Error!] The value of the parameter num_agents must be at least 8", file=sys.stderr)
-        sys.exit(1)
-
-    short_name = 'RDA'
-    agent_name = 'RedDeer'
-
     if (myrank == 0):
         # initialize red deers and Leader (the agent with the max fitness)
         deer = initialize(num_agents, N_vertices)
@@ -98,8 +90,9 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             males = None
             hinds = None
 
-        # print("NUM MALES=", num_males)
-        assert num_males % N_PROCS == 0
+        if(myrank == 0):
+            assert num_males % N_PROCS == 0
+
         local_num_males = num_males // N_PROCS
         males_scattered = np.zeros((local_num_males, N_vertices))
 
@@ -124,8 +117,10 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         num_coms = int(num_males * gamma) # Eq. (4)
         num_stags = num_males - num_coms # Eq. (5)
 
-        assert num_coms % N_PROCS == 0
-        assert num_stags % N_PROCS == 0
+        if(myrank == 0):
+            assert num_coms % N_PROCS == 0
+            assert num_stags % N_PROCS == 0
+
         local_num_coms = num_coms // N_PROCS
         local_num_stags = num_stags // N_PROCS
 
@@ -213,7 +208,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         for i in range(lo, hi):
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
-                # print(j, end=', ')
                 r = np.random.random() # r is a random number in [0, 1]
                 offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
@@ -249,7 +243,9 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         comm.Barrier()
         # mating of stag with nearest hind
-        assert num_hinds % N_PROCS == 0
+        if(myrank == 0):
+            assert num_hinds % N_PROCS == 0
+
         local_num_hinds = num_hinds // N_PROCS
         hinds_scattered = np.zeros((local_num_hinds, N_vertices))
 
@@ -266,7 +262,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         population_pool_addition_local = []
 
         for stag in stags_scattered:
-            # print(stag)
             dist = np.zeros(local_num_hinds)
             for i in range(local_num_hinds):
                 dist[i] = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i])))
@@ -299,7 +294,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
             # update final information
             deer, fitness = sort_agents(deer, obj_function, graph)
-            #display(deer, fitness, agent_name)
+            #display(deer, fitness, 'Red Deer')
             if fitness[0] > Leader_fitness:
                 Leader_agent = deer[0].copy()
                 Leader_fitness = fitness[0].copy()
@@ -316,8 +311,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         print('\n================================================================================')
         print('                                    Final Result                                  ')
         print('================================================================================\n')
-        print('Leader ' + agent_name + ' Fitness : {}'.format(Leader_fitness))
-        print('Leader ' + agent_name + ' Lowest cost : {}'.format(-Leader_cost))
+        print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
+        print('Leader Red Deer Lowest cost : {}'.format(-Leader_cost))
         print('\n================================================================================\n')
 
         # stop timer
@@ -336,7 +331,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         axes.plot(iters, -convergence_curve['fitness'])
 
         if(save_conv_graph):
-            plt.savefig('convergence_graph_'+ short_name + '.jpg')
+            plt.savefig('convergence_graph_RDA.jpg')
         plt.show()
 
         # update attributes of solution
@@ -370,7 +365,7 @@ if __name__ == "__main__":
                 graph_sample_1[j][i] = graph_sample_1[i][j]
 
     comm.Bcast(graph_sample_1, root=0)
-    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
+    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
     if(myrank == 0):
         print(solution.execution_time)
 
