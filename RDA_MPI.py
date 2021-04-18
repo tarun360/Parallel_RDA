@@ -8,6 +8,8 @@ Original file is located at
 """
 
 import numpy as np
+np.random.seed(44)
+
 import time
 import matplotlib.pyplot as plt
 import random, math
