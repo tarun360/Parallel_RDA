@@ -233,6 +233,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 for j in range(len(population_pool_addition_local_arr[i])):
                     population_pool.append(population_pool_addition_local_arr[i][j])
 
+        comm.Barrier()
         # mating of stag with nearest hind
         assert num_hinds % N_PROCS == 0
         local_num_hinds = num_hinds // N_PROCS
