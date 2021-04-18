@@ -332,7 +332,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     else:
         return None
 
-# The CODE which parallizes all, best SPEED-UP (ALTHOUGH NOT THE BEST TIME), HAS OVERFLOW ERROR
+#ALL ERRORS RESOLVED, WORKING
 if __name__ == "__main__":
 
     comm = MPI.COMM_WORLD
