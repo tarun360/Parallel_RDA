@@ -19,7 +19,6 @@ from utilities import Solution, initialize, sort_agents, cycle_cost, display
 
 from mpi4py import MPI
 
-
 def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB, myrank, N_PROCS):
 
     # Red Deer Algorithm
@@ -159,9 +158,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             normal_fit = fitness / norm
             total = np.sum(normal_fit)
             power = normal_fit / total # Eq. (9)
-            num_harems = [int(x * num_hinds) for x in power] # Eq.(10)
+            num_harems = np.array([int(x * num_hinds) for x in power]) # Eq.(10)
+            num_harems_len = len(num_harems)
             max_harem_size = np.max(num_harems)
             harem = np.empty(shape=(num_coms, max_harem_size, N_vertices))
+            harem_shape = harem.shape
             random.shuffle(hinds)
             itr = 0
             for i in range(num_coms):
@@ -169,34 +170,66 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 for j in range(harem_size):
                     harem[i][j] = hinds[itr]
                     itr += 1
+        else:
+            harem = None
+            harem_shape = None
+            num_harems = None
+            num_harems_len = None
+
+        harem_shape = comm.bcast(harem_shape, root=0)
+        num_harems_len = comm.bcast(num_harems_len, root=0)
+
+        harem_scattered = np.empty(shape=(harem_shape[0] // N_PROCS, harem_shape[1], harem_shape[2]))
+        num_harems_scattered = np.empty(num_harems_len // N_PROCS)
+
+        comm.Scatter(num_harems, num_harems_scattered)
+        comm.Scatter(harem, harem_scattered, root=0)
 
         if (myrank == 0):
             # mating of commander with hinds in his harem
-            num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
+            num_harem_mate = np.array([int(x * alpha) for x in num_harems]) # Eq. (11)
             population_pool = list(deer)
-            for i in range(num_coms):
-                random.shuffle(harem[i])
-                for j in range(num_harem_mate[i]):
-                    r = np.random.random() # r is a random number in [0, 1]
-                    offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
+        else:
+            num_harem_mate = None
 
-                    population_pool.append(list(offspring))
+        num_harem_mate_scattered = np.empty(num_coms // N_PROCS)
 
-                    # if number of commanders is greater than 1, inter-harem mating takes place
-                    if num_coms > 1:
-                        # mating of commander with hinds in another harem
-                        k = i
-                        while k == i:
-                            k = random.choice(range(num_coms))
+        comm.Scatter(num_harem_mate, num_harem_mate_scattered, root=0)
+        comm.Scatter(coms, coms_scattered, root=0)
 
-                        num_mate = int(num_harems[k] * beta) # Eq. (13)
+        population_pool_addition_local = []
 
-                        np.random.shuffle(harem[k])
-                        for j in range(num_mate):
-                            r = np.random.random() # r is a random number in [0, 1]
-                            offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
-                            population_pool.append(list(offspring))
+        for i in range(local_num_coms):
+            random.shuffle(harem_scattered[i])
+            for j in range(int(num_harem_mate_scattered[i])):
+                r = np.random.random() # r is a random number in [0, 1]
+                offspring = (coms_scattered[i] + harem_scattered[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
+                population_pool_addition_local.append(list(offspring))
+
+                # if number of commanders is greater than 1, inter-harem mating takes place
+                if num_coms > 1:
+                    # mating of commander with hinds in another harem
+                    k = i
+                    while k == i:
+                        k = random.choice(range(local_num_coms))
+
+                    num_mate = int(num_harems_scattered[k] * beta) # Eq. (13)
+
+                    np.random.shuffle(harem_scattered[k])
+                    for j in range(num_mate):
+                        r = np.random.random() # r is a random number in [0, 1]
+                        offspring = (coms_scattered[i] + harem_scattered[k][j]) / 2 + (UB - LB) * r
+                        population_pool_addition_local.append(list(offspring))
+
+        population_pool_addition_Final = comm.gather(population_pool_addition_local, root=0)
+
+        if(myrank == 0):
+            for population_pool_addition_local_gathered in population_pool_addition_Final:
+                for it in population_pool_addition_local_gathered:
+                    population_pool.append(it)
+
+        comm.Barrier()
 
         # mating of stag with nearest hind
         assert num_hinds % N_PROCS == 0

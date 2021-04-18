@@ -100,7 +100,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         coms = males[:num_coms,:]
         stags = males[num_coms:,:]
-
         # fight between male commanders and stags
         for i in range(num_coms):
             chosen_com = coms[i].copy()
@@ -144,6 +143,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # mating of commander with hinds in his harem
         num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
         population_pool = list(deer)
+        # print(len(coms),len(harem),len(num_harem_mate))
         for i in range(num_coms):
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
@@ -265,6 +265,6 @@ for i in range(N_vertices_sample_1):
     graph_sample_1[i][j] = np.random.randint(1000)
     graph_sample_1[j][i] = graph_sample_1[i][j]
 
-solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5)
+solution = RDA(num_agents=2000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5)
 
 #----------Big example-----------------
