@@ -172,9 +172,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     itr += 1
         else:
             harem = None
-            harem_shape = None
             num_harems = None
-            num_harems_len = None
 
         num_harems = comm.bcast(num_harems, root=0)
         harem = comm.bcast(harem, root=0)
@@ -219,7 +217,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                         offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         population_pool_addition_local.append(list(offspring))
 
-        comm.Barrier()
         if(myrank != 0):
             comm.send(population_pool_addition_local, dest=0)
         else:
@@ -228,18 +225,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for i in range(1,N_PROCS):
                 population_pool_addition_local_arr.append(comm.recv(source = i))
 
-        comm.Barrier()
-
         if(myrank == 0):
             for i in range(len(population_pool_addition_local_arr)):
                 for j in range(len(population_pool_addition_local_arr[i])):
-                    # print(population_pool_addition_local_arr[i][j])
                     population_pool.append(population_pool_addition_local_arr[i][j])
-            # for population_pool_addition_local_gathered in population_pool_addition_Final:
-            #     for it in population_pool_addition_local_gathered:
-            #         population_pool.append(it)
 
-        comm.Barrier()
         # mating of stag with nearest hind
         assert num_hinds % N_PROCS == 0
         local_num_hinds = num_hinds // N_PROCS
