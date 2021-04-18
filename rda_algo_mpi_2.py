@@ -193,6 +193,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         lo = myrank*(num_coms//N_PROCS)
         hi = (myrank+1)*(num_coms//N_PROCS)
+
+        comm.Barrier()
         for i in range(lo, hi):
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
@@ -237,6 +239,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             #     for it in population_pool_addition_local_gathered:
             #         population_pool.append(it)
 
+        comm.Barrier()
         # mating of stag with nearest hind
         assert num_hinds % N_PROCS == 0
         local_num_hinds = num_hinds // N_PROCS
