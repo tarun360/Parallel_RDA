@@ -69,10 +69,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
     # start timer
     if(myrank == 0):
-        start_time = MPI.Wtime()
-
-    if(myrank == 0):
         pbar = tqdm(total = max_iter)
+        start_time = MPI.Wtime()
 
     # main loop
     for iter_no in range(max_iter):
