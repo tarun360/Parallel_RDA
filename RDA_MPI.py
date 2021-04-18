@@ -13,11 +13,12 @@ import matplotlib.pyplot as plt
 import random, math
 import sys
 from tqdm import tqdm
-np.random.seed(44)
-np.seterr(all='warn')
-from utilities import Solution, initialize, sort_agents, cycle_cost, display
+import seaborn as sns
 
+from utilities import Solution, initialize, sort_agents, cycle_cost, display
 from mpi4py import MPI
+
+sns.set()
 
 def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB, myrank, N_PROCS):
 
@@ -310,20 +311,20 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         end_time = MPI.Wtime()
         exec_time = end_time - start_time
 
-        # # plot convergence curves
-        # iters = np.arange(max_iter)+1
-        # fig, axes = plt.subplots()
-        # fig.tight_layout(pad = 5)
-        # # fig.suptitle('Convergence Curves')
-        #
-        # axes.set_title('Total Distance vs Iterations')
-        # axes.set_xlabel('Iteration')
-        # axes.set_ylabel('Total Distance')
-        # axes.plot(iters, -convergence_curve['fitness'])
-        #
-        # if(save_conv_graph):
-        #     plt.savefig('convergence_graph_'+ short_name + '.jpg')
-        # plt.show()
+        # plot convergence curves
+        iters = np.arange(max_iter)+1
+        fig, axes = plt.subplots()
+        fig.tight_layout(pad = 5)
+        fig.suptitle(f'Multi-processing with {N_PROCS} processes')
+
+        axes.set_title('Total Distance vs Iterations')
+        axes.set_xlabel('Iteration')
+        axes.set_ylabel('Total Distance')
+        axes.plot(iters, -convergence_curve['fitness'])
+
+        if(save_conv_graph):
+            plt.savefig('convergence_graph_'+ short_name + '.jpg')
+        plt.show()
 
         # update attributes of solution
         solution.best_agent = Leader_agent
