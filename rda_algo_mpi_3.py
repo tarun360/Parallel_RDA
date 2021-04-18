@@ -199,15 +199,9 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         population_pool_addition_local = []
 
-        # num_harems = comm.bcast(num_harems, root=0)
-        # harem = comm.bcast(harem, root=0)
-        # num_harem_mate = comm.bcast(num_harem_mate, root=0)
-        # coms = comm.bcast(coms, root=0)
-
         for i in range(local_num_coms):
             random.shuffle(harem_scattered[i])
             for j in range(int(num_harem_mate_scattered[i])):
-                # print(j,end=', ')
                 r = np.random.random() # r is a random number in [0, 1]
                 offspring = (coms_scattered[i] + harem_scattered[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
@@ -234,11 +228,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for population_pool_addition_local_gathered in population_pool_addition_Final:
                 for it in population_pool_addition_local_gathered:
                     population_pool.append(it)
-
-        comm.Gather(num_harems_scattered, num_harems)
-        comm.Gather(harem_scattered, harem)
-        comm.Gather(num_harem_mate_scattered, num_harem_mate)
-        comm.Gather(coms_scattered, coms)
 
         comm.Barrier()
 

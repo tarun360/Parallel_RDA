@@ -14,7 +14,7 @@ import random, math
 import sys
 from tqdm import tqdm
 np.random.seed(44)
-
+np.seterr(all='warn')
 from utilities import Solution, initialize, sort_agents, cycle_cost, display
 
 from mpi4py import MPI
@@ -176,34 +176,29 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             num_harems = None
             num_harems_len = None
 
-        harem_shape = comm.bcast(harem_shape, root=0)
-        num_harems_len = comm.bcast(num_harems_len, root=0)
-
-        harem_scattered = np.empty(shape=(harem_shape[0] // N_PROCS, harem_shape[1], harem_shape[2]))
-        num_harems_scattered = np.empty(num_harems_len // N_PROCS)
-
-        comm.Scatter(num_harems, num_harems_scattered)
-        comm.Scatter(harem, harem_scattered, root=0)
+        num_harems = comm.bcast(num_harems, root=0)
+        harem = comm.bcast(harem, root=0)
 
         if (myrank == 0):
             # mating of commander with hinds in his harem
-            num_harem_mate = np.array([int(x * alpha) for x in num_harems]) # Eq. (11)
+            num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
             population_pool = list(deer)
         else:
             num_harem_mate = None
 
-        num_harem_mate_scattered = np.empty(num_coms // N_PROCS)
-
-        comm.Scatter(num_harem_mate, num_harem_mate_scattered, root=0)
-        comm.Scatter(coms, coms_scattered, root=0)
+        num_harem_mate = comm.bcast(num_harem_mate, root=0)
+        coms = comm.bcast(coms, root=0)
 
         population_pool_addition_local = []
 
-        for i in range(local_num_coms):
-            random.shuffle(harem_scattered[i])
-            for j in range(int(num_harem_mate_scattered[i])):
+        lo = myrank*(num_coms//N_PROCS)
+        hi = (myrank+1)*(num_coms//N_PROCS)
+        for i in range(lo, hi):
+            random.shuffle(harem[i])
+            for j in range(num_harem_mate[i]):
+                # print(j, end=', ')
                 r = np.random.random() # r is a random number in [0, 1]
-                offspring = (coms_scattered[i] + harem_scattered[i][j]) / 2 + (UB - LB) * r # Eq. (12)
+                offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
                 population_pool_addition_local.append(list(offspring))
 
@@ -212,14 +207,14 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     # mating of commander with hinds in another harem
                     k = i
                     while k == i:
-                        k = random.choice(range(local_num_coms))
+                        k = random.choice(range(num_coms))
 
-                    num_mate = int(num_harems_scattered[k] * beta) # Eq. (13)
+                    num_mate = int(num_harems[k] * beta) # Eq. (13)
 
-                    np.random.shuffle(harem_scattered[k])
+                    np.random.shuffle(harem[k])
                     for j in range(num_mate):
                         r = np.random.random() # r is a random number in [0, 1]
-                        offspring = (coms_scattered[i] + harem_scattered[k][j]) / 2 + (UB - LB) * r
+                        offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         population_pool_addition_local.append(list(offspring))
 
         population_pool_addition_Final = comm.gather(population_pool_addition_local, root=0)
@@ -249,12 +244,13 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         population_pool_addition_local = []
 
         for stag in stags_scattered:
+            print(stag)
             dist = np.zeros(local_num_hinds)
             for i in range(local_num_hinds):
-                dist[i] = math.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i])))
+                dist[i] = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i])))
             min_dist = np.min(dist)
             for i in range(local_num_hinds):
-                distance = math.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i]))) # Eq. (14)
+                distance = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i]))) # Eq. (14)
                 if(distance == min_dist):
                     r = np.random.random() # r is a random number in [0, 1]
                     offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * r
@@ -338,8 +334,8 @@ if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     myrank = comm.Get_rank()
     N_PROCS = comm.Get_size()
-    N_vertices_sample_1 = 120
-    graph_sample_1 = np.zeros((120,120))
+    N_vertices_sample_1 = 100
+    graph_sample_1 = np.zeros((N_vertices_sample_1,N_vertices_sample_1))
 
     if(myrank == 0):
         for i in range(N_vertices_sample_1):
@@ -350,6 +346,6 @@ if __name__ == "__main__":
                 graph_sample_1[j][i] = graph_sample_1[i][j]
 
     comm.Bcast(graph_sample_1, root=0)
-    solution = RDA(num_agents=2000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
+    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
     if(myrank == 0):
         print(solution.execution_time)
