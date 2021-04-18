@@ -65,8 +65,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     if(myrank == 0):
         start_time = MPI.Wtime()
 
+    if(myrank == 0):
+        pbar = tqdm(total = max_iter)
+
     # main loop
-    for iter_no in tqdm(range(max_iter)):
+    for iter_no in range(max_iter):
         # print('\n================================================================================')
         # print('                          Iteration - {}'.format(iter_no+1))
         # print('================================================================================\n')
@@ -287,6 +290,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 Leader_fitness = fitness[0].copy()
             convergence_curve['fitness'][iter_no] = Leader_fitness
             convergence_curve['feature_count'][iter_no] = int(np.sum(Leader_agent))
+
+            pbar.update(1)
 
     if (myrank == 0):
         # compute final cost
