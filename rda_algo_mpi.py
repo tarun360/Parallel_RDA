@@ -63,7 +63,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         solution.obj_function = obj_function
 
     # start timer
-    start_time = time.time()
+    if(myrank == 0):
+        start_time = MPI.Wtime()
 
     # main loop
     for iter_no in tqdm(range(max_iter)):
@@ -267,7 +268,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         print('\n================================================================================\n')
 
         # stop timer
-        end_time = time.time()
+        end_time = MPI.Wtime()
         exec_time = end_time - start_time
 
         # # plot convergence curves
@@ -316,6 +317,6 @@ if __name__ == "__main__":
                 graph_sample_1[j][i] = graph_sample_1[i][j]
 
     comm.Bcast(graph_sample_1, root=0)
-    solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
+    solution = RDA(num_agents=2000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
     if(myrank == 0):
         print(solution.execution_time)

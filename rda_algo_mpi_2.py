@@ -75,17 +75,13 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # print('\n================================================================================')
         # print('                          Iteration - {}'.format(iter_no+1))
         # print('================================================================================\n')
-        if (rank == 0):
-            deer, fitness = sort_agents(deer, obj_function, graph)
-            num_males = int(num_males_frac * num_agents)
-            num_hinds = num_agents - num_males
-            males = deer[:num_males,:]
-            hinds = deer[num_males:,:]
-            assert num_males % N_PROCS == 0
-        else
-            num_males = int(num_males_frac * num_agents)
-            males = None
+        deer, fitness = sort_agents(deer, obj_function, graph)
+        num_males = int(num_males_frac * num_agents)
+        num_hinds = num_agents - num_males
+        males = deer[:num_males,:]
+        hinds = deer[num_males:,:]
 
+        assert num_males % N_PROCS == 0
         local_num_males = num_males // N_PROCS
         males_scattered = np.zeros((local_num_males, N_vertices))
 
