@@ -322,7 +322,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
 
 if __name__ == "__main__":
-
     N_vertices_sample_1 = 120
     graph_sample_1 = np.zeros((120,120))
 
@@ -333,6 +332,6 @@ if __name__ == "__main__":
             graph_sample_1[i][j] = np.random.randint(1000)
             graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    N_PROCS=8
+    N_PROCS=4
     solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.7, num_males_frac=0.15, UB=5, LB=-5, N_PROCS=N_PROCS)
     print("Execution Time uisng ",N_PROCS," processes is : ",solution.execution_time)

@@ -241,16 +241,16 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     return solution
 
 
-#----------Small example-----------------
-N_vertices = 4
-graph = np.array([[0, 10, 15, 20],
-                  [10, 0, 35, 25],
-                  [15, 35, 0, 30],
-                  [20, 25, 30, 0]])
-# lowest cost for this example is 80 => 1-2-4-3-1
-
-solution = RDA(num_agents=8, max_iter=3, graph=graph, N_vertices=N_vertices, obj_function=cycle_cost, save_conv_graph=True, alpha=0.2, beta=0.1, gamma=0.5, num_males_frac = 0.25, UB=5, LB=-5)
-#----------Small example-----------------
+# #----------Small example-----------------
+# N_vertices = 4
+# graph = np.array([[0, 10, 15, 20],
+#                   [10, 0, 35, 25],
+#                   [15, 35, 0, 30],
+#                   [20, 25, 30, 0]])
+# # lowest cost for this example is 80 => 1-2-4-3-1
+#
+# solution = RDA(num_agents=8, max_iter=3, graph=graph, N_vertices=N_vertices, obj_function=cycle_cost, save_conv_graph=True, alpha=0.2, beta=0.1, gamma=0.5, num_males_frac = 0.25, UB=5, LB=-5)
+# #----------Small example-----------------
 
 #----------Big example-----------------
 np.random.seed(44)

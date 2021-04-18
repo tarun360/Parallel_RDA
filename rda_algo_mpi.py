@@ -17,12 +17,10 @@ np.random.seed(44)
 
 from utilities import Solution, initialize, sort_agents, cycle_cost, display
 
-# from mpi4py import MPI
-# comm = MPI.COMM_WORLD
-# myrank = comm.Get_rank()
-# number_processes = comm.Get_size()
+from mpi4py import MPI
 
-def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB):
+
+def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB, N_PROCS):
 
     # Red Deer Algorithm
     ############################### Parameters ####################################
@@ -43,33 +41,26 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     short_name = 'RDA'
     agent_name = 'RedDeer'
 
+    if (rank == 0):
+        # initialize red deers and Leader (the agent with the max fitness)
+        deer = initialize(num_agents, N_vertices)
+        fitness = np.zeros(num_agents)
+        cost = np.zeros(num_agents)
+        Leader_agent = np.zeros((1, N_vertices))
+        Leader_fitness = float("-inf")
+        Leader_cost = float("-inf")
 
-    # initialize red deers and Leader (the agent with the max fitness)
-    deer = initialize(num_agents, N_vertices)
-    fitness = np.zeros(num_agents)
-    cost = np.zeros(num_agents)
-    Leader_agent = np.zeros((1, N_vertices))
-    Leader_fitness = float("-inf")
-    Leader_cost = float("-inf")
+        # initialize convergence curves
+        convergence_curve = {}
+        convergence_curve['fitness'] = np.zeros(max_iter)
+        convergence_curve['feature_count'] = np.zeros(max_iter)
 
-    # initialize convergence curves
-    convergence_curve = {}
-    convergence_curve['fitness'] = np.zeros(max_iter)
-    convergence_curve['feature_count'] = np.zeros(max_iter)
-
-    # create a solution object
-    solution = Solution()
-    solution.num_agents = num_agents
-    solution.max_iter = max_iter
-    solution.N_vertices = N_vertices
-    solution.obj_function = obj_function
-
-    # initializing parameters
-    # UB = 5 # Upper bound
-    # LB = -5 # Lower bound
-    # gamma = 0.7 # Fraction of total number of males who are chosen as commanders
-    # alpha = 0.9 # Fraction of total number of hinds in a harem who mate with the commander of their harem
-    # beta = 0.4 # Fraction of total number of hinds in a harem who mate with the commander of a different harem
+        # create a solution object
+        solution = Solution()
+        solution.num_agents = num_agents
+        solution.max_iter = max_iter
+        solution.N_vertices = N_vertices
+        solution.obj_function = obj_function
 
     # start timer
     start_time = time.time()
@@ -79,27 +70,37 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # print('\n================================================================================')
         # print('                          Iteration - {}'.format(iter_no+1))
         # print('================================================================================\n')
-        deer, fitness = sort_agents(deer, obj_function, graph)
-        num_males = int(num_males_frac * num_agents)
-        num_hinds = num_agents - num_males
-        males = deer[:num_males,:]
-        hinds = deer[num_males:,:]
+        if (rank == 0):
+            deer, fitness = sort_agents(deer, obj_function, graph)
+            num_males = int(num_males_frac * num_agents)
+            num_hinds = num_agents - num_males
+            males = deer[:num_males,:]
+            hinds = deer[num_males:,:]
+            assert num_males % N_PROCS == 0
+        else
+            num_males = int(num_males_frac * num_agents)
+            males = None
 
+        local_num_males = num_males // N_PROCS
+        males_scattered = np.zeros((local_num_males, N_vertices))
+
+        comm.Scatter(males, males_scattered, root=0)
         # roaring of male deer
-        for i in range(num_males):
+        for i in range(local_num_males):
             r1 = np.random.random() # r1 is a random number in [0, 1]
             r2 = np.random.random() # r2 is a random number in [0, 1]
             r3 = np.random.random() # r3 is a random number in [0, 1]
-            new_male = males[i].copy()
+            new_male = males_scattered[i].copy()
             if r3 >= 0.5:                                    # Eq. (3)
                 new_male += r1 * (((UB - LB) * r2) + LB)
             else:
                 new_male -= r1 * (((UB - LB) * r2) + LB)
 
-            if obj_function(new_male, graph) < obj_function(males[i], graph):
-                males[i] = new_male
+            if obj_function(new_male, graph) < obj_function(males_scattered[i], graph):
+                males_scattered[i] = new_male
 
-
+        comm.Gather(males_scattered, males, root=0)
+        
         # selection of male commanders and stags
         num_coms = int(num_males * gamma) # Eq. (4)
         num_stags = num_males - num_coms # Eq. (5)
@@ -249,14 +250,20 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
 if __name__ == "__main__":
 
+    comm = MPI.COMM_WORLD
+    myrank = comm.Get_rank()
+    N_PROCS = comm.Get_size()
     N_vertices_sample_1 = 120
     graph_sample_1 = np.zeros((120,120))
 
-    for i in range(N_vertices_sample_1):
-        for j in range(N_vertices_sample_1):
-            if(i<=j):
-                break
-            graph_sample_1[i][j] = np.random.randint(1000)
-            graph_sample_1[j][i] = graph_sample_1[i][j]
+    if(myrank == 0):
+        for i in range(N_vertices_sample_1):
+            for j in range(N_vertices_sample_1):
+                if(i<=j):
+                    break
+                graph_sample_1[i][j] = np.random.randint(1000)
+                graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5)
+    comm.Bcast(graph_sample_1, root=0)
+    solution = RDA(num_agents=1000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.15, UB=5, LB=-5, N_PROCS)
+    print(solution.execution_time)
