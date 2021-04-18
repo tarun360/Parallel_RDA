@@ -220,9 +220,12 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         population_pool_addition_Final = comm.gather(population_pool_addition_local, root=0)
 
         if(myrank == 0):
-            for population_pool_addition_local_gathered in population_pool_addition_Final:
-                for it in population_pool_addition_local_gathered:
-                    population_pool.append(it)
+            for i in range(len(population_pool_addition_Final)):
+                for j in range(len(population_pool_addition_Final[i])):
+                    population_pool.append(population_pool_addition_Final[i][j])
+            # for population_pool_addition_local_gathered in population_pool_addition_Final:
+            #     for it in population_pool_addition_local_gathered:
+            #         population_pool.append(it)
 
         comm.Barrier()
 
@@ -244,7 +247,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         population_pool_addition_local = []
 
         for stag in stags_scattered:
-            print(stag)
+            # print(stag)
             dist = np.zeros(local_num_hinds)
             for i in range(local_num_hinds):
                 dist[i] = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i])))
@@ -258,6 +261,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
                     break
 
+        comm.Barrier()
         comm.Gather(hinds_scattered, hinds, root=0)
         comm.Gather(stags_scattered, stags, root=0)
         comm.Gather(np.array(population_pool_addition_local), population_pool_addition, root=0)
@@ -328,7 +332,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     else:
         return None
 
-
+# The CODE which parallizes all, best SPEED-UP (ALTHOUGH NOT THE BEST TIME), HAS OVERFLOW ERROR
 if __name__ == "__main__":
 
     comm = MPI.COMM_WORLD

@@ -344,6 +344,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         return None
 
 
+# The CODE which gives wrong output for some reason
 if __name__ == "__main__":
 
     comm = MPI.COMM_WORLD

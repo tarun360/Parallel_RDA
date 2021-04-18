@@ -169,7 +169,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         # mating of stag with nearest hind
         for stag in stags:
-            print(stag)
             dist = np.zeros(num_hinds)
             for i in range(num_hinds):
                 dist[i] = math.sqrt(np.sum((stag-hinds[i])*(stag-hinds[i])))
@@ -253,19 +252,19 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 # solution = RDA(num_agents=8, max_iter=3, graph=graph, N_vertices=N_vertices, obj_function=cycle_cost, save_conv_graph=True, alpha=0.2, beta=0.1, gamma=0.5, num_males_frac = 0.25, UB=5, LB=-5)
 # #----------Small example-----------------
 
-#----------Big example-----------------
 np.random.seed(44)
 
-N_vertices_sample_1 = 120
-graph_sample_1 = np.zeros((120,120))
+if __name__ == "__main__":
 
-for i in range(N_vertices_sample_1):
-  for j in range(N_vertices_sample_1):
-    if(i<=j):
-      break
-    graph_sample_1[i][j] = np.random.randint(1000)
-    graph_sample_1[j][i] = graph_sample_1[i][j]
+    N_vertices_sample_1 = 100
+    graph_sample_1 = np.zeros((N_vertices_sample_1,N_vertices_sample_1))
 
-solution = RDA(num_agents=2000, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=10, LB=-10)
+    for i in range(N_vertices_sample_1):
+      for j in range(N_vertices_sample_1):
+        if(i<=j):
+          break
+        graph_sample_1[i][j] = np.random.randint(1000)
+        graph_sample_1[j][i] = graph_sample_1[i][j]
 
-#----------Big example-----------------
+    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=True, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5)
+    print(solution.execution_time)
