@@ -71,13 +71,15 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # print('                          Iteration - {}'.format(iter_no+1))
         # print('================================================================================\n')
         num_males = int(num_males_frac * num_agents)
+        num_hinds = num_agents - num_males
+
         if (myrank == 0):
             deer, fitness = sort_agents(deer, obj_function, graph)
-            num_hinds = num_agents - num_males
             males = deer[:num_males,:]
             hinds = deer[num_males:,:]
         else:
             males = None
+            hinds = None
 
         # print("NUM MALES=", num_males)
         assert num_males % N_PROCS == 0
@@ -147,6 +149,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 coms_scattered[i] = new_male_2.copy()
 
         comm.Gather(coms_scattered, coms, root=0)
+        comm.Gather(stags_scattered, stags, root=0)
 
         if (myrank == 0):
             # formation of harems
@@ -166,7 +169,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     harem[i][j] = hinds[itr]
                     itr += 1
 
-
+        if (myrank == 0):
             # mating of commander with hinds in his harem
             num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
             population_pool = list(deer)
@@ -193,22 +196,48 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                             offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                             population_pool.append(list(offspring))
 
-            # mating of stag with nearest hind
-            for stag in stags:
-                dist = np.zeros(num_hinds)
-                for i in range(num_hinds):
-                    dist[i] = math.sqrt(np.sum((stag-hinds[i])*(stag-hinds[i])))
-                min_dist = np.min(dist)
-                for i in range(num_hinds):
-                    distance = math.sqrt(np.sum((stag-hinds[i])*(stag-hinds[i]))) # Eq. (14)
-                    if(distance == min_dist):
-                        r = np.random.random() # r is a random number in [0, 1]
-                        offspring = (stag + hinds[i])/2 + (UB - LB) * r
-                        population_pool.append(list(offspring))
 
-                        break
+        # mating of stag with nearest hind
+        assert num_hinds % N_PROCS == 0
+        local_num_hinds = num_hinds // N_PROCS
+        hinds_scattered = np.zeros((local_num_hinds, N_vertices))
 
+        comm.Scatter(hinds, hinds_scattered, root=0)
+        comm.Scatter(stags, stags_scattered, root=0)
+
+        if( myrank == 0):
+            # list(stags) is used only to define the size of population_pool_addition
+            # converting list to numpy array as Gather works only with numpy array and not list
+            population_pool_addition = np.array(list(stags))
+        else:
+            population_pool_addition = None
+
+        population_pool_addition_local = []
+
+        for stag in stags_scattered:
+            dist = np.zeros(local_num_hinds)
+            for i in range(local_num_hinds):
+                dist[i] = math.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i])))
+            min_dist = np.min(dist)
+            for i in range(local_num_hinds):
+                distance = math.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i]))) # Eq. (14)
+                if(distance == min_dist):
+                    r = np.random.random() # r is a random number in [0, 1]
+                    offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * r
+                    population_pool_addition_local.append(list(offspring))
+
+                    break
+
+        comm.Gather(hinds_scattered, hinds, root=0)
+        comm.Gather(stags_scattered, stags, root=0)
+        comm.Gather(np.array(population_pool_addition_local), population_pool_addition, root=0)
+
+
+        if (myrank == 0):
             # selection of the next generation
+            for it in population_pool_addition:
+                population_pool.append(it)
+
             population_pool = np.array(population_pool)
             population_pool, fitness = sort_agents(population_pool, obj_function, graph)
             maximum = sum([f for f in fitness])
