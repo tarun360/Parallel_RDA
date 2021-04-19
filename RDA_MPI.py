@@ -88,8 +88,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             males = None
             hinds = None
 
-        if(myrank == 0):
-            assert num_males % N_PROCS == 0
+        assert num_males % N_PROCS == 0
 
         local_num_males = num_males // N_PROCS
         males_scattered = np.zeros((local_num_males, N_vertices))
@@ -115,9 +114,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         num_coms = int(num_males * gamma) # Eq. (4)
         num_stags = num_males - num_coms # Eq. (5)
 
-        if(myrank == 0):
-            assert num_coms % N_PROCS == 0
-            assert num_stags % N_PROCS == 0
+        assert num_coms % N_PROCS == 0
+        assert num_stags % N_PROCS == 0
 
         local_num_coms = num_coms // N_PROCS
         local_num_stags = num_stags // N_PROCS
@@ -138,7 +136,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # fight between male commanders and stags
         for i in range(local_num_coms):
             chosen_com = coms_scattered[i].copy()
-            chosen_stag = random.choice(stags_scattered)
+            chosen_stag = random.choice(stags_scattered) # should be stag here instead of stags_scattered
             r1 = np.random.random()
             r2 = np.random.random()
             new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
@@ -241,8 +239,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         comm.Barrier()
         # mating of stag with nearest hind
-        if(myrank == 0):
-            assert num_hinds % N_PROCS == 0
+        assert num_hinds % N_PROCS == 0
 
         local_num_hinds = num_hinds // N_PROCS
         hinds_scattered = np.zeros((local_num_hinds, N_vertices))
