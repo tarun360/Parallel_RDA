@@ -191,7 +191,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         selection_probs = [f/maximum for f in fitness]
         indices = np.random.choice(len(population_pool), size=num_agents, replace=True, p=selection_probs)
         deer = population_pool[indices]
-
+        # deer = population_pool[:num_agents]
         # update final information
         deer, fitness = sort_agents(deer, obj_function, graph)
         #display(deer, fitness, Red Deer)
@@ -200,7 +200,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             Leader_fitness = fitness[0].copy()
         convergence_curve['fitness'][iter_no] = Leader_fitness
         convergence_curve['feature_count'][iter_no] = int(np.sum(Leader_agent))
-
+        # print(Leader_agent)
     # compute final cost
     Leader_agent, Leader_cost = sort_agents(Leader_agent, obj_function, graph)
     deer, cost = sort_agents(deer, obj_function, graph)
@@ -217,8 +217,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
     axes.set_title('Total Distance vs Iterations')
     axes.set_xlabel('Iteration')
-    axes.set_ylabel('Total Distance')
-    axes.plot(iters, -convergence_curve['fitness'])
+    axes.set_ylabel('Fitness')
+    axes.plot(iters, 1/convergence_curve['fitness'], marker='o')
 
     if(save_conv_graph):
         plt.savefig('convergence_graph_RDA.jpg')
@@ -261,11 +261,11 @@ if __name__ == "__main__":
         graph_sample_1[i][j] = np.random.randint(1000)
         graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5)
+    solution = RDA(num_agents=600, max_iter=30, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.9, gamma=0.4, num_males_frac=0.20, UB=0, LB=0)
 
     print('\n================================================================================\n')
     print('RESULTS OBTAINED: ')
     # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
-    print('Leader Red Deer Lowest cost : {}'.format(-solution.best_cost))
+    print('Leader Red Deer Lowest cost : {}'.format(1/solution.best_cost))
     print("EXECUTION TIME: ",solution.execution_time)
     print('\n================================================================================\n')

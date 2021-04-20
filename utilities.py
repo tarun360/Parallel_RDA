@@ -48,12 +48,12 @@ def sort_agents(agents, obj_function, graph):
     return sorted_agents, sorted_fitness
 
 def cycle_cost(agent, graph):
-  encoding = np.argsort(np.argsort(agent)) #gives sorted rank of each element, eg: [0.2, 0.5, 0.1, 0.9] -> [1 2 0 3]
+  encoding = np.argsort(agent) #gives sorted rank of each element, eg: [0.2, 0.5, 0.1, 0.9] -> [2 0 1 3]
   cycle = np.append(encoding,encoding[0])
   cost = 0
   for i in range(0, len(cycle)-1):
     cost = cost + graph[cycle[i]][cycle[i+1]]
-  return -cost
+  return 1/cost
 
 def display(agents, fitness, agent_name='Agent'):
     # display the population
