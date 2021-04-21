@@ -22,7 +22,7 @@ def initialize(num_agents, N_vertices):
     agents = np.zeros((num_agents,N_vertices))
 
     for agent_no in range(num_agents):
-      agents[agent_no] = np.random.choice([0, 1], size=N_vertices, p=[.5, .5])
+      agents[agent_no] = np.random.rand()
 
     return agents
 

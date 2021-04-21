@@ -87,10 +87,15 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             r2 = np.random.random() # r2 is a random number in [0, 1]
             r3 = np.random.random() # r3 is a random number in [0, 1]
             new_male = males[i].copy()
-            if r3 >= 0.5:                                    # Eq. (3)
-                new_male += r1 * (((UB - LB) * r2) + LB)
-            else:
-                new_male -= r1 * (((UB - LB) * r2) + LB)
+
+            sign_arr = np.random.choice([1, -1], size=N_vertices, p=[.5, .5])
+            random_arr1 = np.random.rand(N_vertices)
+            random_arr2 = np.random.rand(N_vertices)
+            new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB)
+            # if r3 >= 0.5:                                    # Eq. (3)
+            #     new_male += r1 * (((UB - LB) * r2) + LB)
+            # else:
+            #     new_male -= r1 * (((UB - LB) * r2) + LB)
 
             if obj_function(new_male, graph) < obj_function(males[i], graph):
                 males[i] = new_male
@@ -106,10 +111,16 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         for i in range(num_coms):
             chosen_com = coms[i].copy()
             chosen_stag = random.choice(stags)
-            r1 = np.random.random()
-            r2 = np.random.random()
-            new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
-            new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
+
+            random_arr1 = np.random.rand(N_vertices)
+            random_arr2 = np.random.rand(N_vertices)
+
+            new_male_1 = (chosen_com + chosen_stag)/2 + random_arr1*( (UB-LB)*random_arr2 + LB )
+            new_male_2 = (chosen_com + chosen_stag)/2 - random_arr1*( (UB-LB)*random_arr2 + LB )
+            # r1 = np.random.random()
+            # r2 = np.random.random()
+            # new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
+            # new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
 
             fitness = np.zeros(4)
             fitness[0] = obj_function(chosen_com, graph)
@@ -149,8 +160,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         for i in range(num_coms):
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
-                r = np.random.random() # r is a random number in [0, 1]
-                offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
+
+                random_arr = np.random.rand(N_vertices)
+                offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr
+                # r = np.random.random() # r is a random number in [0, 1]
+                # offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
                 population_pool.append(list(offspring))
 
@@ -165,8 +179,10 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
                     np.random.shuffle(harem[k])
                     for j in range(num_mate):
-                        r = np.random.random() # r is a random number in [0, 1]
-                        offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
+                        random_arr = np.random.rand(N_vertices)
+                        offspring = (coms[i]+harem[k][j])/2 + (UB-LB)*random_arr
+                        # r = np.random.random() # r is a random number in [0, 1]
+                        # offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         population_pool.append(list(offspring))
 
         # mating of stag with nearest hind
@@ -178,8 +194,10 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for i in range(num_hinds):
                 distance = math.sqrt(np.sum((stag-hinds[i])*(stag-hinds[i]))) # Eq. (14)
                 if(distance == min_dist):
-                    r = np.random.random() # r is a random number in [0, 1]
-                    offspring = (stag + hinds[i])/2 + (UB - LB) * r
+                    random_arr = np.random.rand(N_vertices)
+                    offspring = (stag + hinds[i])/2 + (UB - LB) * random_arr
+                    # r = np.random.random() # r is a random number in [0, 1]
+                    # offspring = (stag + hinds[i])/2 + (UB - LB) * r
                     population_pool.append(list(offspring))
 
                     break
@@ -261,7 +279,7 @@ if __name__ == "__main__":
         graph_sample_1[i][j] = np.random.randint(1000)
         graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    solution = RDA(num_agents=600, max_iter=30, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.9, gamma=0.4, num_males_frac=0.20, UB=0, LB=0)
+    solution = RDA(num_agents=600, max_iter=30, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.9, gamma=0.7, num_males_frac=0.20, UB=1, LB=0)
 
     print('\n================================================================================\n')
     print('RESULTS OBTAINED: ')
