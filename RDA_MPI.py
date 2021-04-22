@@ -25,6 +25,8 @@ import time
 import matplotlib.pyplot as plt
 import random, math
 import sys
+import warnings
+warnings.filterwarnings("ignore")
 from tqdm import tqdm
 import seaborn as sns
 
@@ -312,8 +314,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 Leader_agent = deer[0].copy()
                 Leader_fitness = fitness[0].copy()
             convergence_curve['fitness'][iter_no] = Leader_fitness
-            convergence_curve['feature_count'][iter_no] = int(np.sum(Leader_agent))
-
             pbar.update(1)
 
     if (myrank == 0):
@@ -360,7 +360,7 @@ if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     myrank = comm.Get_rank()
     N_PROCS = comm.Get_size()
-    N_vertices_sample_1 = 100
+    N_vertices_sample_1 = 200
     graph_sample_1 = np.zeros((N_vertices_sample_1,N_vertices_sample_1))
 
     if(myrank == 0):

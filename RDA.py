@@ -23,6 +23,8 @@ import time
 import matplotlib.pyplot as plt
 import random, math
 import sys
+import warnings
+warnings.filterwarnings("ignore")
 from tqdm import tqdm
 
 from utilities import Solution, initialize, sort_agents, cycle_cost, display
@@ -226,7 +228,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             Leader_agent = deer[0].copy()
             Leader_fitness = fitness[0].copy()
         convergence_curve['fitness'][iter_no] = Leader_fitness
-        convergence_curve['feature_count'][iter_no] = int(np.sum(Leader_agent))
         # print(Leader_agent)
     # compute final cost
     Leader_agent, Leader_cost = sort_agents(Leader_agent, obj_function, graph)
