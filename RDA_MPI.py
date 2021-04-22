@@ -96,14 +96,20 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         comm.Scatter(males, males_scattered, root=0)
         # roaring of male deer
         for i in range(local_num_males):
-            r1 = np.random.random() # r1 is a random number in [0, 1]
-            r2 = np.random.random() # r2 is a random number in [0, 1]
-            r3 = np.random.random() # r3 is a random number in [0, 1]
             new_male = males_scattered[i].copy()
-            if r3 >= 0.5:                                    # Eq. (3)
-                new_male += r1 * (((UB - LB) * r2) + LB)
-            else:
-                new_male -= r1 * (((UB - LB) * r2) + LB)
+
+            sign_arr = np.random.choice([1, -1], size=N_vertices, p=[.5, .5])
+            random_arr1 = np.random.rand(N_vertices)
+            random_arr2 = np.random.rand(N_vertices)
+            new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB)
+
+            # r1 = np.random.random() # r1 is a random number in [0, 1]
+            # r2 = np.random.random() # r2 is a random number in [0, 1]
+            # r3 = np.random.random() # r3 is a random number in [0, 1]
+            # if r3 >= 0.5:                                    # Eq. (3)
+            #     new_male += r1 * (((UB - LB) * r2) + LB)
+            # else:
+            #     new_male -= r1 * (((UB - LB) * r2) + LB)
 
             if obj_function(new_male, graph) < obj_function(males_scattered[i], graph):
                 males_scattered[i] = new_male
@@ -137,10 +143,16 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         for i in range(local_num_coms):
             chosen_com = coms_scattered[i].copy()
             chosen_stag = random.choice(stags_scattered) # should be stag here instead of stags_scattered
-            r1 = np.random.random()
-            r2 = np.random.random()
-            new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
-            new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
+            # r1 = np.random.random()
+            # r2 = np.random.random()
+            # new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
+            # new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
+
+            random_arr1 = np.random.rand(N_vertices)
+            random_arr2 = np.random.rand(N_vertices)
+
+            new_male_1 = (chosen_com + chosen_stag)/2 + random_arr1*( (UB-LB)*random_arr2 + LB )
+            new_male_2 = (chosen_com + chosen_stag)/2 - random_arr1*( (UB-LB)*random_arr2 + LB )
 
             fitness = np.zeros(4)
             fitness[0] = obj_function(chosen_com, graph)
@@ -205,7 +217,9 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
                 r = np.random.random() # r is a random number in [0, 1]
-                offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
+                random_arr = np.random.rand(N_vertices)
+                offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr
+                # offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
                 population_pool_addition_local.append(list(offspring))
 
@@ -220,8 +234,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
                     np.random.shuffle(harem[k])
                     for j in range(num_mate):
-                        r = np.random.random() # r is a random number in [0, 1]
-                        offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
+                        # r = np.random.random() # r is a random number in [0, 1]
+                        # offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
+                        random_arr = np.random.rand(N_vertices)
+                        offspring = (coms[i]+harem[k][j])/2 + (UB-LB)*random_arr
+
                         population_pool_addition_local.append(list(offspring))
 
         if(myrank != 0):
@@ -264,10 +281,11 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for i in range(local_num_hinds):
                 distance = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i]))) # Eq. (14)
                 if(distance == min_dist):
-                    r = np.random.random() # r is a random number in [0, 1]
-                    offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * r
+                    # r = np.random.random() # r is a random number in [0, 1]
+                    # offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * r
+                    random_arr = np.random.rand(N_vertices)
+                    offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * random_arr
                     population_pool_addition_local.append(list(offspring))
-
                     break
 
         comm.Gather(hinds_scattered, hinds, root=0)
@@ -316,7 +334,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         axes.set_title('Total Distance vs Iterations')
         axes.set_xlabel('Iteration')
         axes.set_ylabel('Total Distance')
-        axes.plot(iters, -convergence_curve['fitness'])
+        axes.plot(iters, 1/convergence_curve['fitness'])
 
         if(save_conv_graph):
             plt.savefig('convergence_graph_RDA.jpg')
@@ -354,13 +372,13 @@ if __name__ == "__main__":
                 graph_sample_1[j][i] = graph_sample_1[i][j]
 
     comm.Bcast(graph_sample_1, root=0)
-    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=5, LB=-5, myrank=myrank, N_PROCS=N_PROCS)
+    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=1, LB=0, myrank=myrank, N_PROCS=N_PROCS)
 
     if(myrank == 0):
         print('\n================================================================================\n')
         print('RESULTS OBTAINED: ')
         # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
-        print('Leader Red Deer Lowest cost : {}'.format(-solution.best_cost))
+        print('Leader Red Deer Lowest cost : {}'.format(1/solution.best_cost))
         print("EXECUTION TIME: ",solution.execution_time)
         print('\n================================================================================\n')
 

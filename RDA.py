@@ -83,15 +83,16 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         # roaring of male deer
         for i in range(num_males):
-            r1 = np.random.random() # r1 is a random number in [0, 1]
-            r2 = np.random.random() # r2 is a random number in [0, 1]
-            r3 = np.random.random() # r3 is a random number in [0, 1]
-            new_male = males[i].copy()
+            # r1 = np.random.random() # r1 is a random number in [0, 1]
+            # r2 = np.random.random() # r2 is a random number in [0, 1]
+            # r3 = np.random.random() # r3 is a random number in [0, 1]
+            # new_male = males[i].copy()
 
             sign_arr = np.random.choice([1, -1], size=N_vertices, p=[.5, .5])
             random_arr1 = np.random.rand(N_vertices)
             random_arr2 = np.random.rand(N_vertices)
             new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB)
+            # new_male = (new_male-np.min(new_male))/(np.max(new_male)-np.min(new_male))
             # if r3 >= 0.5:                                    # Eq. (3)
             #     new_male += r1 * (((UB - LB) * r2) + LB)
             # else:
@@ -117,6 +118,10 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
             new_male_1 = (chosen_com + chosen_stag)/2 + random_arr1*( (UB-LB)*random_arr2 + LB )
             new_male_2 = (chosen_com + chosen_stag)/2 - random_arr1*( (UB-LB)*random_arr2 + LB )
+
+            # new_male_1 = (new_male_1-np.min(new_male_1))/(np.max(new_male_1)-np.min(new_male_1))
+            # new_male_2 = (new_male_2-np.min(new_male_2))/(np.max(new_male_2)-np.min(new_male_2))
+
             # r1 = np.random.random()
             # r2 = np.random.random()
             # new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
@@ -163,6 +168,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
                 random_arr = np.random.rand(N_vertices)
                 offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr
+                # offspring = (offspring-np.min(offspring))/(np.max(offspring)-np.min(offspring))
+
                 # r = np.random.random() # r is a random number in [0, 1]
                 # offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
@@ -181,6 +188,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                     for j in range(num_mate):
                         random_arr = np.random.rand(N_vertices)
                         offspring = (coms[i]+harem[k][j])/2 + (UB-LB)*random_arr
+                        # offspring = (offspring-np.min(offspring))/(np.max(offspring)-np.min(offspring))
                         # r = np.random.random() # r is a random number in [0, 1]
                         # offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         population_pool.append(list(offspring))
@@ -196,6 +204,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 if(distance == min_dist):
                     random_arr = np.random.rand(N_vertices)
                     offspring = (stag + hinds[i])/2 + (UB - LB) * random_arr
+                    # offspring = (offspring-np.min(offspring))/(np.max(offspring)-np.min(offspring))
                     # r = np.random.random() # r is a random number in [0, 1]
                     # offspring = (stag + hinds[i])/2 + (UB - LB) * r
                     population_pool.append(list(offspring))
@@ -279,7 +288,7 @@ if __name__ == "__main__":
         graph_sample_1[i][j] = np.random.randint(1000)
         graph_sample_1[j][i] = graph_sample_1[i][j]
 
-    solution = RDA(num_agents=600, max_iter=30, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.9, gamma=0.7, num_males_frac=0.20, UB=1, LB=0)
+    solution = RDA(num_agents=600, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.8, beta=0.9, gamma=0.4, num_males_frac=0.20, UB=1, LB=0)
 
     print('\n================================================================================\n')
     print('RESULTS OBTAINED: ')
