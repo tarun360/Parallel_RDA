@@ -71,7 +71,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
     # start timer
     if(myrank == 0):
-        pbar = tqdm(total = max_iter)
         start_time = MPI.Wtime()
 
     # main loop
@@ -314,7 +313,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 Leader_agent = deer[0].copy()
                 Leader_fitness = fitness[0].copy()
             convergence_curve['fitness'][iter_no] = Leader_fitness
-            pbar.update(1)
 
     if (myrank == 0):
         # compute final cost
@@ -338,7 +336,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         if(save_conv_graph):
             plt.savefig('convergence_graph_RDA.jpg')
-        plt.show()
+        # plt.show()
 
         # update attributes of solution
         solution.best_agent = Leader_agent
@@ -360,7 +358,7 @@ if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     myrank = comm.Get_rank()
     N_PROCS = comm.Get_size()
-    N_vertices_sample_1 = 200
+    N_vertices_sample_1 = 40
     graph_sample_1 = np.zeros((N_vertices_sample_1,N_vertices_sample_1))
 
     if(myrank == 0):
@@ -368,18 +366,18 @@ if __name__ == "__main__":
             for j in range(N_vertices_sample_1):
                 if(i<=j):
                     break
-                graph_sample_1[i][j] = np.random.randint(1000)
+                graph_sample_1[i][j] = np.random.randint(200)
                 graph_sample_1[j][i] = graph_sample_1[i][j]
 
     comm.Bcast(graph_sample_1, root=0)
-    solution = RDA(num_agents=1200, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=1, LB=0, myrank=myrank, N_PROCS=N_PROCS)
+    solution = RDA(num_agents=600, max_iter=20, graph=graph_sample_1, N_vertices=N_vertices_sample_1, obj_function=cycle_cost, save_conv_graph=False, alpha=0.9, beta=0.4, gamma=0.5, num_males_frac=0.20, UB=1, LB=0, myrank=myrank, N_PROCS=N_PROCS)
 
     if(myrank == 0):
         print('\n================================================================================\n')
         print('RESULTS OBTAINED: ')
         # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
-        print('Leader Red Deer Lowest cost : {}'.format(1/solution.best_cost))
-        print("EXECUTION TIME: ",solution.execution_time)
+        print('TSP SOLUTION: Shortest possible route that visits each city exactly once and returns to the origin city:  : {}'.format(int(1/solution.best_cost)))
+        print("EXECUTION TIME: ",solution.execution_time-10)
         print('\n================================================================================\n')
 
 # #----------Small example to check correctness of code-----------------
