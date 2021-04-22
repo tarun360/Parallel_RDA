@@ -377,7 +377,7 @@ if __name__ == "__main__":
         print('RESULTS OBTAINED: ')
         # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
         print('TSP SOLUTION: Shortest possible route that visits each city exactly once and returns to the origin city:  : {}'.format(int(1/solution.best_cost)))
-        print("EXECUTION TIME: ",solution.execution_time-10)
+        print("EXECUTION TIME: ",solution.execution_time)
         print('\n================================================================================\n')
 
 # #----------Small example to check correctness of code-----------------
