@@ -38,17 +38,6 @@ sns.set()
 
 def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, alpha, beta, gamma, num_males_frac, UB, LB, myrank, N_PROCS):
 
-    # Red Deer Algorithm
-    ############################### Parameters ####################################
-    #                                                                             #
-    #   num_agents: number of red deers                                           #
-    #   max_iter: maximum number of generations                                   #
-    #   obj_function: the function to maximize while doing feature selection      #
-    #   trans_function_shape: shape of the transfer function used                 #
-    #   save_conv_graph: boolean value for saving convergence graph               #
-    #                                                                             #
-    ###############################################################################
-
     if (myrank == 0):
         # initialize red deers and Leader (the agent with the max fitness)
         deer = initialize(num_agents, N_vertices)
@@ -76,9 +65,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
     # main loop
     for iter_no in range(max_iter):
-        # print('\n================================================================================')
-        # print('                          Iteration - {}'.format(iter_no+1))
-        # print('================================================================================\n')
         num_males = int(num_males_frac * num_agents)
         num_hinds = num_agents - num_males
 
@@ -104,14 +90,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             random_arr1 = np.random.rand(N_vertices)
             random_arr2 = np.random.rand(N_vertices)
             new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB)
-
-            # r1 = np.random.random() # r1 is a random number in [0, 1]
-            # r2 = np.random.random() # r2 is a random number in [0, 1]
-            # r3 = np.random.random() # r3 is a random number in [0, 1]
-            # if r3 >= 0.5:                                    # Eq. (3)
-            #     new_male += r1 * (((UB - LB) * r2) + LB)
-            # else:
-            #     new_male -= r1 * (((UB - LB) * r2) + LB)
 
             if obj_function(new_male, graph) < obj_function(males_scattered[i], graph):
                 males_scattered[i] = new_male
@@ -144,11 +122,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # fight between male commanders and stags
         for i in range(local_num_coms):
             chosen_com = coms_scattered[i].copy()
-            chosen_stag = random.choice(stags_scattered) # should be stag here instead of stags_scattered
-            # r1 = np.random.random()
-            # r2 = np.random.random()
-            # new_male_1 = (chosen_com + chosen_stag) / 2 + r1 * (((UB - LB) * r2) + LB) # Eq. (6)
-            # new_male_2 = (chosen_com + chosen_stag) / 2 - r1 * (((UB - LB) * r2) + LB) # Eq. (7)
+            chosen_stag = random.choice(stags_scattered) 
 
             random_arr1 = np.random.rand(N_vertices)
             random_arr2 = np.random.rand(N_vertices)
@@ -221,7 +195,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
                 r = np.random.random() # r is a random number in [0, 1]
                 random_arr = np.random.rand(N_vertices)
                 offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr
-                # offspring = (coms[i] + harem[i][j]) / 2 + (UB - LB) * r # Eq. (12)
 
                 population_pool_addition_local.append(list(offspring))
 
@@ -236,8 +209,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
                     np.random.shuffle(harem[k])
                     for j in range(num_mate):
-                        # r = np.random.random() # r is a random number in [0, 1]
-                        # offspring = (coms[i] + harem[k][j]) / 2 + (UB - LB) * r
                         random_arr = np.random.rand(N_vertices)
                         offspring = (coms[i]+harem[k][j])/2 + (UB-LB)*random_arr
 
@@ -283,8 +254,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for i in range(local_num_hinds):
                 distance = np.sqrt(np.sum((stag-hinds_scattered[i])*(stag-hinds_scattered[i]))) # Eq. (14)
                 if(distance == min_dist):
-                    # r = np.random.random() # r is a random number in [0, 1]
-                    # offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * r
                     random_arr = np.random.rand(N_vertices)
                     offspring = (stag + hinds_scattered[i])/2 + (UB - LB) * random_arr
                     population_pool_addition_local.append(list(offspring))
@@ -309,7 +278,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
             # update final information
             deer, fitness = sort_agents(deer, obj_function, graph)
-            #display(deer, fitness, 'Red Deer')
             if fitness[0] > Leader_fitness:
                 Leader_agent = deer[0].copy()
                 Leader_fitness = fitness[0].copy()
@@ -337,7 +305,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
 
         if(save_conv_graph):
             plt.savefig('convergence_graph_RDA.jpg')
-        # plt.show()
+        plt.show()
 
         # update attributes of solution
         solution.best_agent = Leader_agent
