@@ -5,6 +5,7 @@ In this project, I have used MPI for parallelising Red deer algorithm (RDA) for 
 For detailed description of the project, kindly refer to DOCUMENTATION.pdf.
 
 Parallel code using MPI: RDA_MPI.py
+
 Sequential Code: RDA.py
 
 References:
