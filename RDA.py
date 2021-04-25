@@ -71,7 +71,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             sign_arr = np.random.choice([1, -1], size=N_vertices, p=[.5, .5])
             random_arr1 = np.random.rand(N_vertices)
             random_arr2 = np.random.rand(N_vertices)
-            new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB)
+            new_male += sign_arr*random_arr1*((UB-LB)*random_arr2+LB) # Eq. (1)
 
             if obj_function(new_male, graph) < obj_function(males[i], graph):
                 males[i] = new_male
@@ -91,8 +91,8 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             random_arr1 = np.random.rand(N_vertices)
             random_arr2 = np.random.rand(N_vertices)
 
-            new_male_1 = (chosen_com + chosen_stag)/2 + random_arr1*( (UB-LB)*random_arr2 + LB )
-            new_male_2 = (chosen_com + chosen_stag)/2 - random_arr1*( (UB-LB)*random_arr2 + LB )
+            new_male_1 = (chosen_com + chosen_stag)/2 + random_arr1*( (UB-LB)*random_arr2 + LB ) # Eq. (6)
+            new_male_2 = (chosen_com + chosen_stag)/2 - random_arr1*( (UB-LB)*random_arr2 + LB ) # Eq. (7)
 
             fitness = np.zeros(4)
             fitness[0] = obj_function(chosen_com, graph)
@@ -134,7 +134,7 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
             for j in range(num_harem_mate[i]):
 
                 random_arr = np.random.rand(N_vertices)
-                offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr
+                offspring = (coms[i]+harem[i][j]) / 2 + (UB-LB)*random_arr # Eq. (12)
 
                 population_pool.append(list(offspring))
 
