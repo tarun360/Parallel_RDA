@@ -1,7 +1,11 @@
 # Parallelising Red deer algorithm (RDA) for solving Travelling Salesman Problem (TSP)
 
-#### In this project, I have used MPI for parallelising Red deer algorithm (RDA) for solving Travelling salesman problem (TSP). RDA is a meta-heuristic algorithm inspired by the unique mating process of scottish red deers.
+In this project, I have used MPI for parallelising Red deer algorithm (RDA) for solving Travelling salesman problem (TSP). RDA is a meta-heuristic algorithm inspired by the unique mating process of scottish red deers.
 
+For detailed description of the project, kindly refer to DOCUMENTATION.pdf.
+
+Parallel code using MPI: RDA_MPI.py
+Sequential Code: RDA.py
 
 References:
 
