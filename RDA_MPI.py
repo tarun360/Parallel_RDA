@@ -344,7 +344,6 @@ if __name__ == "__main__":
     if(myrank == 0):
         print('\n================================================================================\n')
         print('RESULTS OBTAINED: ')
-        # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
         print('TSP SOLUTION: Shortest possible route that visits each city exactly once and returns to the origin city:  : {}'.format(int(1/solution.best_cost)))
         print("EXECUTION TIME: ",solution.execution_time)
         print('\n================================================================================\n')

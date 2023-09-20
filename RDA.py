@@ -128,7 +128,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
         # mating of commander with hinds in his harem
         num_harem_mate = [int(x * alpha) for x in num_harems] # Eq. (11)
         population_pool = list(deer)
-        # print(len(coms),len(harem),len(num_harem_mate))
         for i in range(num_coms):
             random.shuffle(harem[i])
             for j in range(num_harem_mate[i]):
@@ -193,7 +192,6 @@ def RDA(num_agents, max_iter, graph, N_vertices, obj_function, save_conv_graph, 
     iters = np.arange(max_iter)+1
     fig, axes = plt.subplots()
     fig.tight_layout(pad = 5)
-    # fig.suptitle('Convergence Curves')
 
     axes.set_title('Total Distance vs Iterations')
     axes.set_xlabel('Iteration')
@@ -233,7 +231,6 @@ if __name__ == "__main__":
 
     print('\n================================================================================\n')
     print('RESULTS OBTAINED: ')
-    # print('Leader Red Deer Fitness : {}'.format(Leader_fitness))
     print('Leader Red Deer Lowest cost : {}'.format(1/solution.best_cost))
     print("EXECUTION TIME: ",solution.execution_time)
     print('\n================================================================================\n')
